@@ -1,21 +1,17 @@
-from flask import Flask, jsonify
+import os
+from flask import Flask, send_from_directory
 
 app = Flask(__name__)
 
 
-@app.route("/persist/static/manifest.json")
-def m():
-  return jsonify({"status": "success", "files": []})
-
-
-@app.route("/persist/static/<path:f>")
-def s(f):
-  return "", 200
+@app.route("/persist/static/<path:filename>")
+def serve_static(filename):
+  return send_from_directory("static", filename)
 
 
 @app.route("/")
-def h():
-  return "OK", 200
+def home():
+  return "Server is Running!", 200
 
 
 if __name__ == "__main__":
