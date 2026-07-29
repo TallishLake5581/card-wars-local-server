@@ -1,23 +1,31 @@
-name: Build Flutter APK from ZIP
+name: Build Flutter APK
 on: [push]
 jobs:
   build:
-     runs-on: ubuntu-latest
-     steps:
-       - uses: actions/checkout@v4
-       - name: Extract Project ZIP
-         run: |
-           unzip card_wars.zip -d extracted_project
-           cd extracted_project/*
-           mv * ../
-           cd ..
-       - uses: subosito/flutter-action@v2
-         with:
-           flutter-version: '3.x'
-           channel: 'stable'
-       - run: flutter pub get
-       - run: flutter build apk --release
-       - uses: actions/upload-artifact@v4
-         with:
-           name: app-release
-           path: build/app/outputs/flutter-apk/app-release.apk
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
+      - name: Extract ZIP
+        run: |
+          unzip -q card_wars.zip -d project_extracted
+          cd project_extracted
+          # العثور على المجلد الذي بداخله pubspec.yaml ونقله للخارج
+          DIR=$(find . -maxdepth 2 -name "pubspec.yaml" -exec dirname {} \;)
+          cd "$DIR"
+          cp -r . ../../
+          cd ../../
+      - uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.x'
+          channel: 'stable'
+      - run: flutter pub get
+      - run: flutter build apk --release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
